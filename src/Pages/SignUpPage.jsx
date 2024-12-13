@@ -5,11 +5,18 @@ import arrowIcon from "../assets/Icons/arrowright.png";
 import { TraceSpinner } from "react-spinners-kit";
 //https://dmitrymorozoff.github.io/react-spinners-kit/
 
-const SignUpPage = ({ startNow, imagePaths, ip }) => {
+const SignUpPage = ({
+  startNow,
+  imagePaths,
+  ip,
+  name,
+  setName,
+  avIndex,
+  setAvIndex,
+}) => {
   // Paths to the avatar images
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState(1);
-  const [avIndex, setAvIndex] = useState(0);
   useEffect(() => {
     async function load() {
       setTimeout(async () => {
@@ -20,7 +27,7 @@ const SignUpPage = ({ startNow, imagePaths, ip }) => {
   }, []);
   const avatar = imagePaths[avIndex];
 
-  const [name, setName] = useState("");
+  // const [name, setName] = useState("");
   const handleChange = (event) => {
     setName(event.target.value);
   };
