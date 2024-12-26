@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import TCPListener from "./TCPListener";
 import SignUpPage from "./Pages/SignUpPage";
 import HomePage from "./Pages/HomePage";
 import Chat from "./Components/Chat";
@@ -14,7 +14,7 @@ const imagePaths = [
   "/logos/av7.png",
   "/logos/av8.png",
 ];
-
+import TCPPeerClient from "./TCPpeer";
 const App = () => {
   const [message, setMessage] = useState("Discover Peers");
   const [response, setResponse] = useState([]);
@@ -24,6 +24,94 @@ const App = () => {
   const [name, setName] = useState("");
   const [avIndex, setAvIndex] = useState(0);
   const [chat, setChat] = useState(false);
+
+  /*************************TCP LISTENER*****************************/
+
+  const [port, setPort] = useState();
+  const [tcpListen, setTcpListen] = useState(false);
+  const [tcpMessages, setTcpMessages] = useState([]);
+  const [socket, setSocket] = useState(null);
+
+  // useEffect(() => {
+  //   const webSocket = new WebSocket("ws://localhost:8080/tcp-listener");
+
+  //   webSocket.onopen = () => {
+  //     console.log("WebSocket connected");
+  //     setSocket(webSocket);
+  //   };
+
+  //   webSocket.onmessage = (event) => {
+  //     setTcpMessages((prev) => [...prev, event.data]);
+  //     console.log(event.data);
+  //   };
+
+  //   webSocket.onclose = () => {
+  //     console.log("WebSocket disconnected");
+  //     setSocket(null);
+  //   };
+
+  //   return () => {
+  //     if (webSocket.readyState === WebSocket.OPEN) {
+  //       webSocket.close();
+  //       setTcpListen((old) => false);
+  //     }
+  //   };
+  // }, []);
+
+  const getAvailablePort = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/api/tcp/getAvailablePort"
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to get port", error);
+    }
+  };
+
+  const stopTCPListener = async () => {
+    console.log("Stop Tcp Listener");
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send("exit");
+      socket.close();
+      setTcpListen((old) => false);
+      setSocket(null); // Clear the socket reference
+    } else {
+      console.log("WebSocket is not open. Cannot stop TCP listener.");
+    }
+  };
+  const startTCPListener = async () => {
+    console.log("Start Tcp Listener");
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send("close:current-listener");
+      socket.close();
+      setTcpListen((old) => false);
+    }
+
+    const rport = await getAvailablePort();
+    setPort((old) => rport);
+    console.log("New WebSocket Creation");
+    const newSocket = new WebSocket("ws://localhost:8080/tcp-listener");
+    newSocket.onopen = () => {
+      console.log("New WebSocket connected");
+      setTimeout(async () => {
+        setTcpListen((old) => true);
+        await setSocket((old) => newSocket);
+      }, 1000);
+      newSocket.send(`start-listener:${rport}`);
+    };
+
+    newSocket.onmessage = (event) => {
+      setTcpMessages((prev) => [...prev, event.data]);
+      console.log(event.data);
+    };
+
+    newSocket.onclose = () => {
+      console.log("New WebSocket disconnected");
+      setTcpListen((old) => false);
+    };
+  };
 
   /*******************Peers Management*************************/
   const [discoveredPeers, setDiscoveredPeers] = useState([]);
@@ -142,7 +230,7 @@ const App = () => {
           name: "Halim Youcef",
           ip: "192.168.1.3",
           imgIndex: "5",
-          connected: true,
+          connected: false,
           owner: false,
         },
       ];
@@ -220,10 +308,15 @@ const App = () => {
               refresh={DiscoverPeers}
               chat={chat}
               setChat={StartChat}
+              port={port}
+              tcpListen={tcpListen}
+              startTCPListener={startTCPListener}
+              stopTCPListener={stopTCPListener}
             />
           </>
         )}
         {chat && <Chat setChat={StartChat} chatPeer={chatPeer} />}
+        {/* <TCPPeerClient /> */}
       </div>
     </>
   );

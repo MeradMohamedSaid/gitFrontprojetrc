@@ -1,6 +1,13 @@
 import React, { useEffect } from "react";
 
-const OnlinePeer = ({ peer, imagePaths }) => {
+const OnlinePeer = ({
+  peer,
+  imagePaths,
+  port,
+  tcpListen,
+  startTCPListener,
+  stopTCPListener,
+}) => {
   return (
     <div className="PRLpeer">
       <div className="PRLPeerImg">
@@ -27,7 +34,30 @@ const OnlinePeer = ({ peer, imagePaths }) => {
           )}
         </p>
         <p>
-          <span>{peer.ip}</span>
+          <span>
+            {peer.ip}
+            {peer.owner && tcpListen && <span>:{port}</span>}
+          </span>
+
+          {peer.owner && (
+            <>
+              {!tcpListen ? (
+                <button
+                  style={{ background: "var(--active)" }}
+                  onClick={() => startTCPListener()}
+                >
+                  start listening
+                </button>
+              ) : (
+                <button
+                  style={{ background: "var(--inActive)" }}
+                  onClick={() => stopTCPListener()}
+                >
+                  Stop
+                </button>
+              )}
+            </>
+          )}
           {!peer.connected && <button>connect</button>}
         </p>
       </div>

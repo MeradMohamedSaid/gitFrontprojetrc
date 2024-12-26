@@ -7,6 +7,7 @@ import PeersList from "../Components/peersList";
 import cloudpic from "../assets/Icons/cloud.png";
 import filepic from "../assets/Icons/files.png";
 import ConnectedPeers from "../Components/ConnectedPeers";
+import FileDisplay from "../Components/FileDisplay";
 const HomePage = ({
   peersList,
   setPeersList,
@@ -14,6 +15,10 @@ const HomePage = ({
   refresh,
   chat,
   setChat,
+  port,
+  tcpListen,
+  startTCPListener,
+  stopTCPListener,
 }) => {
   const [phase, setPhase] = useState(1);
   return (
@@ -111,7 +116,11 @@ const HomePage = ({
           </>
         )}
         {phase === 2 && <>Manager</>}
-        {phase === 3 && <>History</>}
+        {phase === 3 && (
+          <>
+            <FileDisplay />
+          </>
+        )}
       </div>
       <div className="HPRight">
         <h4>Peers List</h4>
@@ -121,6 +130,10 @@ const HomePage = ({
             peersList={peersList}
             setPeersList={setPeersList}
             imagePaths={imagePaths}
+            port={port}
+            tcpListen={tcpListen}
+            startTCPListener={startTCPListener}
+            stopTCPListener={stopTCPListener}
           />
         </>
       </div>

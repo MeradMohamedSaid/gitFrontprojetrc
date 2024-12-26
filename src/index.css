@@ -18,6 +18,7 @@ body {
 :root {
   --accent: #015aff;
   --active: #00b837;
+  --inActive: #b80000;
   --away: #f28f04;
 }
 
@@ -618,6 +619,11 @@ h6 {
   align-items: center;
   color: rgb(255, 255, 255);
   cursor: pointer;
+  transition: 0.3s ease all;
+}
+
+.close:hover {
+  background: rgb(133, 0, 0);
 }
 .chatHis {
   flex: 1;

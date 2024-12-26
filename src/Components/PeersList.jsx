@@ -2,7 +2,16 @@ import React, { useEffect } from "react";
 import OnlinePeer from "./onlinePeer";
 import { IoMdRefresh } from "react-icons/io";
 
-const PeersList = ({ peersList, setPeersList, imagePaths, refresh }) => {
+const PeersList = ({
+  peersList,
+  setPeersList,
+  imagePaths,
+  refresh,
+  port,
+  tcpListen,
+  startTCPListener,
+  stopTCPListener,
+}) => {
   return (
     <div className="PLContainer">
       <div className="PLSelector"></div>
@@ -24,7 +33,15 @@ const PeersList = ({ peersList, setPeersList, imagePaths, refresh }) => {
               console.log(peer);
               return (
                 <>
-                  <OnlinePeer peer={peer} imagePaths={imagePaths} />
+                  <OnlinePeer
+                    key={peer.ip || peer.name}
+                    peer={peer}
+                    imagePaths={imagePaths}
+                    port={port}
+                    tcpListen={tcpListen}
+                    startTCPListener={startTCPListener}
+                    stopTCPListener={stopTCPListener}
+                  />
                 </>
               );
             }
@@ -45,6 +62,10 @@ const PeersList = ({ peersList, setPeersList, imagePaths, refresh }) => {
                       key={peer.ip || peer.name}
                       peer={peer}
                       imagePaths={imagePaths}
+                      port={port}
+                      tcpListen={tcpListen}
+                      startTCPListener={startTCPListener}
+                      stopTCPListener={stopTCPListener}
                     />
                   ))}
               </div>

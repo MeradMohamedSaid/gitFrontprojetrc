@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { IoSend } from "react-icons/io5";
 const imagePaths = [
   "/logos/av1.png",
@@ -82,7 +82,13 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
   //   );
   // };
 
-  const sendNewChat = () => {};
+  const sendNewChat = () => {
+    console.log(inputValue);
+    var prefChat = chathis;
+    prefChat.push({ sender: 1, message: inputValue, timestamp: Date.now() });
+    setInputValue((old) => "");
+  };
+
   const chatrenderfun = () => {
     const groupedChats = [];
 
@@ -144,14 +150,27 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
       </>
     );
   };
+  const [inputValue, setInputValue] = useState("");
 
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
+  const chatHistoryRef = useRef(null);
+  const scrollToBottom = () => {
+    if (chatHistoryRef.current) {
+      chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+    }
+  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatrenderfun()]);
   return (
     <div className="chatdiv">
       <div className="chatBody">
         <div className="close" onClick={() => setChat(null)}>
           X
         </div>
-        <div className="chatHis">
+        <div className="chatHis" ref={chatHistoryRef}>
           {/* <div className="chatRow">
             <div className="chatav">
               <img src={imagePaths[owner.imgIndex]} alt="" />
@@ -178,9 +197,14 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
         </div>
         <div className="chatCtrl">
           <div className="chatmsg">
-            <input type="text" placeholder="Write your message..." />
+            <input
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+              placeholder="Write your message..."
+            />
           </div>
-          <button className="chatsend">
+          <button className="chatsend" onClick={() => sendNewChat()}>
             <IoSend />
           </button>
         </div>
