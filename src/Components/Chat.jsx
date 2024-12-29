@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+
 import { IoSend } from "react-icons/io5";
 const imagePaths = [
   "/logos/av1.png",
@@ -10,7 +11,14 @@ const imagePaths = [
   "/logos/av7.png",
   "/logos/av8.png",
 ];
-const Chat = ({ setChat, chatPeer, ownerww }) => {
+const Chat = ({
+  setChat,
+  chatPeer,
+  ownerww,
+  chatList,
+  setChatList,
+  sendSocketMsg,
+}) => {
   // const peerTest = {
   //   name: "Halim Youcef",
   //   ip: "192.168.1.3",
@@ -28,88 +36,60 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
   useEffect(() => {
     setPeerTest((old) => chatPeer);
   }, []);
-  const owner = {
-    name: "Merad Mohamed Said",
-    ip: "192.168.1.6",
-    imgIndex: "3",
-    connected: true,
-    owner: true,
-  };
 
-  const [chathis, setChatHis] = useState([
-    { sender: 1, message: "Hello You", timestamp: "1734034283" },
-    { sender: 1, message: "Wsup", timestamp: "1734034299" },
-    { sender: 1, message: "Wsup", timestamp: "1734034299" },
-    { sender: 2, message: "Hey i miss you", timestamp: "1734034329" },
-  ]);
-  const [chatRender, setChatRender] = useState();
-  // const chatrenderfun = () => {
-  //   return (
-  //     <>
-  //       {chathis.map((chat, index) => {
-  //         return (
-  //           <>
-  //             <div className="chatRow">
-  //               <div className="chatav">
-  //                 <img
-  //                   src={
-  //                     chat.sender === 1
-  //                       ? imagePaths[owner.imgIndex]
-  //                       : imagePaths[peerTest.imgIndex]
-  //                   }
-  //                   style={{
-  //                     borderColor:
-  //                       chat.sender === 1 ? "var(--accent)" : "var(--active)",
-  //                   }}
-  //                   alt=""
-  //                 />
-  //               </div>
-  //               <div className="chatmsgrow">
-  //                 <div className="chatinfo">
-  //                   <span>{chat.sender === 1 ? owner.name : peerTest.name}</span>
-  //                   <span>-</span>
-  //                   <span>{chat.timestamp}</span>
-  //                 </div>
-  //                 <div className="chattext">
-  //                   <span>{chat.message}</span>
-  //                 </div>
-  //               </div>
-  //             </div>
-  //           </>
-  //         );
-  //       })}
-  //     </>
-  //   );
-  // };
-
-  const sendNewChat = () => {
-    console.log(inputValue);
-    var prefChat = chathis;
-    prefChat.push({ sender: 1, message: inputValue, timestamp: Date.now() });
+  const sendNewChat = async () => {
+    //"msg"+":"+"time"+":"+"sender"+":"+"receiver"+":"+"type"
+    var ncv =
+      inputValue +
+      ":" +
+      Date.now() +
+      ":" +
+      ownerww.ip +
+      ":" +
+      chatPeer.ip +
+      ":" +
+      2;
+    console.log(ncv);
+    var prefChat = chatList;
+    prefChat.push({
+      sender: 1,
+      message: inputValue,
+      timestamp: Date.now(),
+      from: ownerww.ip,
+      to: chatPeer.ip,
+    });
+    await sendSocketMsg(ncv);
+    setChatList((oldchat) => prefChat);
     setInputValue((old) => "");
   };
 
   const chatrenderfun = () => {
     const groupedChats = [];
 
-    chathis.forEach((chat) => {
-      const currentTimestamp = Number(chat.timestamp);
+    chatList.forEach((chat) => {
       if (
-        groupedChats.length > 0 &&
-        groupedChats[groupedChats.length - 1].sender === chat.sender &&
-        currentTimestamp -
-          Number(groupedChats[groupedChats.length - 1].lastTimestamp) <=
-          60
+        (chat.sender === 2 && chat.from === chatPeer.ip) ||
+        (chat.sender === 1 && chat.to === chatPeer.ip)
       ) {
-        groupedChats[groupedChats.length - 1].messages.push(chat.message);
-        groupedChats[groupedChats.length - 1].lastTimestamp = currentTimestamp;
-      } else {
-        groupedChats.push({
-          sender: chat.sender,
-          messages: [chat.message],
-          timestamp: chat.timestamp,
-          lastTimestamp: currentTimestamp,
-        });
+        const currentTimestamp = chat.timestamp;
+        if (
+          groupedChats.length > 0 &&
+          groupedChats[groupedChats.length - 1].sender === chat.sender &&
+          currentTimestamp -
+            groupedChats[groupedChats.length - 1].lastTimestamp <=
+            60000
+        ) {
+          groupedChats[groupedChats.length - 1].messages.push(chat.message);
+          groupedChats[groupedChats.length - 1].lastTimestamp =
+            currentTimestamp;
+        } else {
+          groupedChats.push({
+            sender: chat.sender,
+            messages: [chat.message],
+            timestamp: chat.timestamp,
+            lastTimestamp: currentTimestamp,
+          });
+        }
       }
     });
 
@@ -121,7 +101,7 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
               <img
                 src={
                   chatGroup.sender === 1
-                    ? imagePaths[owner.imgIndex]
+                    ? imagePaths[ownerww.imgIndex]
                     : imagePaths[peerTest.imgIndex]
                 }
                 style={{
@@ -133,9 +113,7 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
             </div>
             <div className="chatmsgrow">
               <div className="chatinfo">
-                <span>
-                  {chatGroup.sender === 1 ? owner.name : peerTest.name}
-                </span>
+                <span>{chatGroup.sender === 1 ? "You" : peerTest.name}</span>
                 <span>-</span>
                 <span>{chatGroup.timestamp}</span>
               </div>
@@ -150,17 +128,20 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
       </>
     );
   };
+
   const [inputValue, setInputValue] = useState("");
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
-  const chatHistoryRef = useRef(null);
+
+  const chatListtoryRef = useRef(null);
   const scrollToBottom = () => {
-    if (chatHistoryRef.current) {
-      chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+    if (chatListtoryRef.current) {
+      chatListtoryRef.current.scrollTop = chatListtoryRef.current.scrollHeight;
     }
   };
+
   useEffect(() => {
     scrollToBottom();
   }, [chatrenderfun()]);
@@ -170,7 +151,7 @@ const Chat = ({ setChat, chatPeer, ownerww }) => {
         <div className="close" onClick={() => setChat(null)}>
           X
         </div>
-        <div className="chatHis" ref={chatHistoryRef}>
+        <div className="chatHis" ref={chatListtoryRef}>
           {/* <div className="chatRow">
             <div className="chatav">
               <img src={imagePaths[owner.imgIndex]} alt="" />

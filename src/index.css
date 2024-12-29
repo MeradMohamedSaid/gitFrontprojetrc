@@ -493,7 +493,7 @@ h6 {
 }
 
 .HomeMainConnectedPeers {
-  width: 100%;
+  width: 95%;
   height: 60%;
   box-sizing: border-box;
   overflow-y: auto;
@@ -502,6 +502,12 @@ h6 {
   justify-content: start;
   align-items: center;
   gap: 20px;
+}
+
+.HomeMainConnectedPeers .noPeers h3 {
+  all: unset;
+  color: #c4c4c4;
+  text-align: center;
 }
 
 .CPDiv {
@@ -608,7 +614,8 @@ h6 {
   position: absolute;
   top: 0;
   right: 0;
-  background: rgb(255, 0, 0);
+  background: rgb(133, 0, 0);
+
   padding: 0 20px;
   height: 20px;
   font-size: 15px;
@@ -623,7 +630,7 @@ h6 {
 }
 
 .close:hover {
-  background: rgb(133, 0, 0);
+  background: rgb(255, 0, 0);
 }
 .chatHis {
   flex: 1;

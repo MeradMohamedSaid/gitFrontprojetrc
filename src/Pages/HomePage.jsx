@@ -89,7 +89,9 @@ const HomePage = ({
                   <>
                     {peersList.filter((peer) => !peer.owner && peer.connected)
                       .length === 0 ? (
-                      <h3>No Connected Peers</h3>
+                      <span className="noPeers">
+                        <h3>No Connected Peers</h3>
+                      </span>
                     ) : (
                       <>
                         {peersList
@@ -109,7 +111,9 @@ const HomePage = ({
                     )}
                   </>
                 ) : (
-                  <h3>No Connected Peers</h3>
+                  <span className="noPeers">
+                    <h3>No Connected Peers</h3>
+                  </span>
                 )}
               </div>
             </div>
