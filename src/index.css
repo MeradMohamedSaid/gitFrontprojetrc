@@ -367,9 +367,8 @@ h6 {
 
 .PRLpeer {
   width: 100%;
-  background: white;
   border-radius: 11px;
-  padding: 5px 10px;
+  padding: 5px;
   box-sizing: border-box;
   display: flex;
   justify-content: start;
@@ -417,28 +416,40 @@ h6 {
   justify-content: start;
   width: 100%;
 }
-.PRLInfo p:nth-child(1) {
+.PRLInfo div:nth-child(1) {
   font-size: 14px;
   font-weight: bold;
   color: #000;
   width: 100%;
 }
-.PRLInfo p:nth-child(2) {
+.PRLInfo .PRUNDERdiv {
   font-size: small;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
 }
-.PRLInfo button {
+.PeerInfoButtons {
+  width: 100%;
+  display: flex;
+  box-sizing: border-box;
+  justify-content: end;
+  gap: 5px;
+}
+.PeerInfoButtons button {
   background: var(--accent);
   color: white;
   padding: 5px 10px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  box-sizing: border-box;
+  text-wrap: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.PRLInfo button:hover {
+.PeerInfoButtons button:hover {
   opacity: 0.8;
 }
 
@@ -754,4 +765,58 @@ h6 {
   flex-direction: column;
   justify-content: start;
   align-items: start;
+}
+.portDiv {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #00000091;
+}
+.portDivInput {
+  width: 30%;
+  height: 30%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  border: solid 2px var(--accent);
+}
+.portDivInput * {
+  width: 80%;
+  border-radius: 3px;
+  border: none;
+  font-size: 18px;
+  padding: 10px 5px;
+}
+.portDivInput span {
+  color: #000;
+}
+.portDivInput input {
+  box-sizing: border-box;
+  outline: none;
+  text-align: center;
+}
+.portDivInput button {
+  transition: 0.3s ease;
+  cursor: pointer;
+}
+.portDivInput button:nth-child(3) {
+  background: var(--accent);
+  color: white;
+}
+.portDivInput button:nth-child(4) {
+  background: var(--inActive);
+  color: white;
+}
+.portDivInput button:hover {
+  opacity: 0.8;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import OnlinePeer from "./onlinePeer";
+import OnlinePeer from "./OnlinePeer";
 import { IoMdRefresh } from "react-icons/io";
 
 const PeersList = ({
@@ -11,6 +11,9 @@ const PeersList = ({
   tcpListen,
   startTCPListener,
   stopTCPListener,
+  requestsSent,
+  requestsReceived,
+  connectToPeer,
 }) => {
   return (
     <div className="PLContainer">
@@ -41,6 +44,9 @@ const PeersList = ({
                     tcpListen={tcpListen}
                     startTCPListener={startTCPListener}
                     stopTCPListener={stopTCPListener}
+                    requestsSent={requestsSent}
+                    requestsReceived={requestsReceived}
+                    connectToPeer={connectToPeer}
                   />
                 </>
               );
@@ -66,6 +72,9 @@ const PeersList = ({
                       tcpListen={tcpListen}
                       startTCPListener={startTCPListener}
                       stopTCPListener={stopTCPListener}
+                      requestsSent={requestsSent}
+                      requestsReceived={requestsReceived}
+                      connectToPeer={connectToPeer}
                     />
                   ))}
               </div>

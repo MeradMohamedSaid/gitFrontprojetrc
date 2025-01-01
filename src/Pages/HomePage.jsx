@@ -19,6 +19,9 @@ const HomePage = ({
   tcpListen,
   startTCPListener,
   stopTCPListener,
+  requestsSent,
+  requestsReceived,
+  connectToPeer,
 }) => {
   const [phase, setPhase] = useState(1);
   return (
@@ -138,6 +141,9 @@ const HomePage = ({
             tcpListen={tcpListen}
             startTCPListener={startTCPListener}
             stopTCPListener={stopTCPListener}
+            requestsSent={requestsSent}
+            requestsReceived={requestsReceived}
+            connectToPeer={connectToPeer}
           />
         </>
       </div>

@@ -32,6 +32,8 @@ const App = () => {
   const [tcpMessages, setTcpMessages] = useState([]);
   const [socket, setSocket] = useState(null);
   const [connectedPeers, setConnectedPeers] = useState([]);
+  const [requestsSent, setRequestsSent] = useState([]);
+  const [requestsReceived, setRequestsReceived] = useState([]);
 
   // useEffect(() => {
   //   const webSocket = new WebSocket("ws://localhost:8080/tcp-listener");
@@ -58,6 +60,21 @@ const App = () => {
   //     }
   //   };
   // }, []);
+  const connectToPeer = async (peerAddress, peerPort) => {
+    const apiUrl = "http://localhost:8080/api/tcp/connect";
+    const requestData = {
+      localAddress: peersList[0],
+      peerAddress,
+      peerPort,
+    };
+    try {
+      const response = await axios.post(apiUrl, requestData);
+      return response.data; // Return the server's response
+    } catch (error) {
+      console.error("Error connecting to peer:", error);
+      throw error;
+    }
+  };
 
   const getAvailablePort = async () => {
     try {
@@ -92,7 +109,9 @@ const App = () => {
     }
 
     const rport = await getAvailablePort();
-    setPort((old) => rport);
+    setTimeout(async () => {
+      await setPort((old) => rport);
+    }, 1000);
     //console.log("New WebSocket Creation");
     const newSocket = new WebSocket("ws://localhost:8080/tcp-listener");
     newSocket.onopen = () => {
@@ -103,15 +122,24 @@ const App = () => {
       }, 1000);
       newSocket.send(`start-listener:${rport}`);
     };
-
     newSocket.onmessage = (event) => {
       setTcpMessages((prev) => [...prev, event.data]);
 
       switch (event.data.split(":")[0]) {
         case "connected":
-          AcceptConnection(event.data.split(":")[1]);
+          AcceptConnection(event.data.split(":")[1], true);
           break;
         case "info":
+          console.log("New info recieved", event.data.split(":"));
+          switch (event.data.split(":")[1]) {
+            case "Accepted connection from":
+              AcceptConnection(event.data.split(":")[2], false);
+              break;
+            case "Start Listening on Port":
+            default:
+              break;
+          }
+          break;
         case "message":
           console.log("New message recieved", event.data.split(":"));
           var prefChat = chatList;
@@ -119,9 +147,10 @@ const App = () => {
             sender: 2,
             message: event.data.split(":")[3],
             timestamp: event.data.split(":")[4],
-            from: event.data.split(":")[5].substring(1),
+            from: event.data.split(":")[5],
             to: event.data.split(":")[6],
           });
+          break;
         default:
           console.log("ws=> ", event.data);
           break;
@@ -143,20 +172,42 @@ const App = () => {
     }
   };
 
-  const AcceptConnection = (ip) => {
+  const AcceptConnection = (ip, type) => {
+    if (type) {
+      setRequestsSent((prev) => {
+        if (!prev.includes(ip)) {
+          return [...prev, ip];
+        }
+        return prev;
+      });
+    } else {
+      setRequestsReceived((prev) => {
+        if (!prev.includes(ip)) {
+          return [...prev, ip];
+        }
+        return prev;
+      });
+    }
     console.log("accepted connection with function");
-    setPeersList((prevPeersList) =>
-      prevPeersList.map((peer) =>
-        peer.ip === ip ? { ...peer, connected: true } : peer
-      )
-    );
-    setConnectedPeers((prev) => {
-      if (!prev.includes(ip)) {
-        return [...prev, ip];
-      }
-      return prev;
-    });
+    // setConnectedPeers((prev) => {
+    //   if (!prev.includes(ip)) {
+    //     return [...prev, ip];
+    //   }
+    //   return prev;
+    // });
+    // setPeersList((prevPeersList) =>
+    //   prevPeersList.map((peer) =>
+    //     peer.ip === ip ? { ...peer, connected: true } : peer
+    //   )
+    // );
   };
+
+  useEffect(() => {
+    const commonElements = requestsSent.filter((peer) =>
+      requestsReceived.includes(peer)
+    );
+    setConnectedPeers((old) => commonElements);
+  }, [requestsSent, requestsReceived]);
   /*******************Peers Management*************************/
   const [discoveredPeers, setDiscoveredPeers] = useState([]);
   const [peersList, setPeersList] = useState([]);
@@ -195,56 +246,6 @@ const App = () => {
           ]
     );
   }, [discoveredPeers, connectedPeers]);
-
-  // useEffect(() => {
-  //   setPeersList((prevList) => {
-  //     // Ensure prevList is always an array
-  //     const validPrevList = Array.isArray(prevList) ? prevList : [];
-
-  //     const updatedPeersList = [];
-
-  //     // Always include the owner peer
-  //     if (validPrevList.length === 0) {
-  //       updatedPeersList.push({
-  //         name: name,
-  //         ip: ip,
-  //         imgIndex: avIndex,
-  //         connected: true,
-  //         owner: true,
-  //       });
-  //     } else {
-  //       updatedPeersList.push(...validPrevList.filter((peer) => peer.owner));
-  //     }
-
-  //     // Merge discovered peers with the existing list
-  //     discoveredPeers.forEach((peer) => {
-  //       const existingPeerIndex = updatedPeersList.findIndex(
-  //         (existingPeer) => existingPeer.ip === peer.ip
-  //       );
-
-  //       if (existingPeerIndex !== -1) {
-  //         const isConnectedPeer = connectedPeers.some(
-  //           (connectedPeer) => connectedPeer === peer.ip
-  //         );
-
-  //         // Update the existing peer, keeping its connected state
-  //         updatedPeersList[existingPeerIndex] = {
-  //           ...updatedPeersList[existingPeerIndex],
-  //           name: peer.name, // Update the name if it has changed
-  //           connected: isConnectedPeer
-  //             ? updatedPeersList[existingPeerIndex].connected
-  //             : peer.connected,
-  //           imgIndex: peer.imgIndex, // Update imgIndex
-  //         };
-  //       } else {
-  //         // Add the new peer
-  //         updatedPeersList.push(peer);
-  //       }
-  //     });
-
-  //     return updatedPeersList;
-  //   });
-  // }, [discoveredPeers, connectedPeers]);
 
   /***********************************************************/
 
@@ -305,81 +306,6 @@ const App = () => {
 
     setPhase((old) => 2);
   };
-
-  // const DiscoverPeers = async () => {
-  //   try {
-  //     setMessage("Loading");
-  //     const res = await axios.get("http://localhost:8080/api/discoverPeers");
-
-  //     const responseData = res.data;
-  //     let arraofPeers = [
-  //       {
-  //         name: "Halim Youcef",
-  //         ip: "192.168.1.3",
-  //         imgIndex: "5",
-  //         connected: false,
-  //         owner: false,
-  //       },
-  //     ];
-
-  //     responseData.forEach((peer) => {
-  //       const peero = {
-  //         name: peer.name,
-  //         ip: peer.address,
-  //         imgIndex: peer.imgIndex > 7 ? 7 : peer.imgIndex,
-  //         connected: false,
-  //         owner: false,
-  //       };
-  //       arraofPeers.push(peero);
-  //     });
-
-  //     console.log("Array of peers:", arraofPeers);
-
-  //     setDiscoveredPeers((prevPeers) => {
-  //       const updatedPeers = [...prevPeers];
-
-  //       arraofPeers.forEach((peer) => {
-  //         const existingPeerIndex = updatedPeers.findIndex(
-  //           (discoveredPeer) => discoveredPeer.ip === peer.ip
-  //         );
-
-  //         if (existingPeerIndex !== -1) {
-  //           // Check if the peer is in the connectedPeers list
-  //           const isConnectedPeer = connectedPeers.some(
-  //             (connectedPeer) => connectedPeer === peer.ip
-  //           );
-
-  //           updatedPeers[existingPeerIndex] = {
-  //             ...updatedPeers[existingPeerIndex],
-  //             name: peer.name, // Update name if it has changed
-  //             connected: isConnectedPeer
-  //               ? updatedPeers[existingPeerIndex].connected
-  //               : peer.connected,
-  //             owner: updatedPeers[existingPeerIndex].owner, // Keep other properties intact
-  //           };
-  //         } else {
-  //           updatedPeers.push(peer);
-  //         }
-  //       });
-
-  //       return updatedPeers;
-  //     });
-
-  //     console.log("Final Array:", discoveredPeers);
-  //     setMessage("Discover Peers");
-  //   } catch (error) {
-  //     if (error.response) {
-  //       console.error("Response error:", error.response);
-  //       alert(`Error: ${error.response.status} - ${error.response.data}`);
-  //     } else if (error.request) {
-  //       console.error("Request error:", error.request);
-  //       alert("No response received from the server.");
-  //     } else {
-  //       console.error("Error:", error.message);
-  //       alert("An error occurred while setting up the request.");
-  //     }
-  //   }
-  // };
 
   const DiscoverPeers = async () => {
     try {
@@ -528,6 +454,9 @@ const App = () => {
               tcpListen={tcpListen}
               startTCPListener={startTCPListener}
               stopTCPListener={stopTCPListener}
+              requestsSent={requestsSent}
+              requestsReceived={requestsReceived}
+              connectToPeer={connectToPeer}
             />
           </>
         )}
